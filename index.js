@@ -76,14 +76,14 @@ async function run() {
     })
 
     // posting into cart
-    app.post('/cart', async (req, res) => {
+    app.post('/cart', verifyJwt, async (req, res) => {
         const booking = req.body;
         const result = await bookingCollection.insertOne(booking);
         res.send(result);
     })
 
     //getting items on the cart of all users
-    app.get('/cart', async (req, res) => {
+    app.get('/cart', verifyJwt, async (req, res) => {
         const cartItems = {};
         const result = await bookingCollection.find(cartItems).toArray();
         res.send(result)
@@ -116,8 +116,19 @@ async function run() {
         res.send({ result, token })
     })
 
+    // Making admin
+    app.put("/users/admin/:email",verifyJwt, async (req, res) => {
+        const email = req.params.email;
+        const filter = { userEmail: email };
+        const updateDoc = {
+            $set: { role: "admin" }
+        }
+        const result = await userCollection.updateOne(filter, updateDoc)
+        res.send(result)
+    })
+
     // getting all users information
-    app.get('/users', async (req, res) => {
+    app.get('/users', verifyJwt, async (req, res) => {
         const query = {};
         const result = await userCollection.find(query).toArray();
         res.send(result)
