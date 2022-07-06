@@ -41,21 +41,15 @@ async function run() {
         res.send(result);
     })
 
+    // getting cart item for specific email
     app.get('/cart/:email', async (req, res) => {
-        // console.log(req.query);
-        // const email = req.query.email;
-        // console.log(email);
-        // const query = { userEmail: email };
-        // const result = await bookingCollection.findOne(query).toArray();
-        // res.send(result)
         const email = req.params.email;
-        console.log(email);
         const query = { userEmail: email };
-        console.log(query);
         const result = await bookingCollection.find(query).toArray();
         res.send(result)
     })
 
+    // posting into cart
     app.post('/cart', async (req, res) => {
         const booking = req.body;
         const result = await bookingCollection.insertOne(booking);
@@ -63,6 +57,13 @@ async function run() {
     })
 
 
+    // cart item delete
+    app.delete('/cart/:email', async (req, res) => {
+        const email = req.params.email;
+        const query = { userEmail: email };
+        const result = await bookingCollection.deleteOne(query);
+        res.send(result);
+    })
 }
 
 run().catch(console.dir)
