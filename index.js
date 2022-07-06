@@ -23,7 +23,7 @@ async function run() {
     // database -> collection
     const toolsCollection = client.db("ManufacturerWebsite").collection('tools');
     const bookingCollection = client.db("ManufacturerWebsite").collection('cart');
-
+    const userCollection = client.db("ManufacturerWebsite").collection("users");
 
     // getting all tools api
     app.get('/tools', async (req, res) => {
@@ -63,6 +63,21 @@ async function run() {
         const query = { userEmail: email };
         const result = await bookingCollection.deleteOne(query);
         res.send(result);
+    })
+
+    // getting all user whoever create an account and giving them jwt token
+    app.put("/users/:email", async (req, res) => {
+        const email = req.params.email;
+        const user = req.body;
+        const filter = { userEmail: email };
+        const options = { upsert: true };
+
+        const updateDoc = {
+            $set: user
+        }
+
+        const result = await userCollection.updateOne(filter, updateDoc, options)
+        res.send(result)
     })
 }
 
