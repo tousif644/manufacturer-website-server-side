@@ -35,82 +35,96 @@ function verifyJwt(req, res, next) {
     })
 }
 
-    // async function
-    async function run() {
-        await client.connect();
+// async function
+async function run() {
+    await client.connect();
 
-        // database -> collection
-        const toolsCollection = client.db("ManufacturerWebsite").collection('tools');
-        const bookingCollection = client.db("ManufacturerWebsite").collection('cart');
-        const userCollection = client.db("ManufacturerWebsite").collection("users");
+    // database -> collection
+    const toolsCollection = client.db("ManufacturerWebsite").collection('tools');
+    const bookingCollection = client.db("ManufacturerWebsite").collection('cart');
+    const userCollection = client.db("ManufacturerWebsite").collection("users");
 
-        // getting all tools api
-        app.get('/tools', async (req, res) => {
-            const query = {};
-            const result = await toolsCollection.find(query).toArray();
-            res.send(result);
-        })
-
-
-        // getting a tools by using this api
-        app.get('/tools/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const result = await toolsCollection.findOne(query);
-            res.send(result);
-        })
-
-        // getting cart item for specific email
-        app.get('/cart/:email', verifyJwt, async (req, res) => {
-            const email = req.params.email;
-            const decodedEmail = req.decoded.userEmail;
-            console.log(decodedEmail);
-            if (email === decodedEmail) {
-                const query = { userEmail: email };
-                const result = await bookingCollection.find(query).toArray();
-                res.send(result)
-            } else {
-                return res.status(403).send({ message: "Forbidden Access" })
-            }
-
-        })
-
-        // posting into cart
-        app.post('/cart', async (req, res) => {
-            const booking = req.body;
-            const result = await bookingCollection.insertOne(booking);
-            res.send(result);
-        })
+    // getting all tools api
+    app.get('/tools', async (req, res) => {
+        const query = {};
+        const result = await toolsCollection.find(query).toArray();
+        res.send(result);
+    })
 
 
-        // cart item delete
-        app.delete('/cart/:email', async (req, res) => {
-            const email = req.params.email;
+    // getting a tools by using this api
+    app.get('/tools/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await toolsCollection.findOne(query);
+        res.send(result);
+    })
+
+    // getting cart item for specific email
+    app.get('/cart/:email', verifyJwt, async (req, res) => {
+        const email = req.params.email;
+        const decodedEmail = req.decoded.userEmail;
+        console.log(decodedEmail);
+        if (email === decodedEmail) {
             const query = { userEmail: email };
-            const result = await bookingCollection.deleteOne(query);
-            res.send(result);
-        })
+            const result = await bookingCollection.find(query).toArray();
+            res.send(result)
+        } else {
+            return res.status(403).send({ message: "Forbidden Access" })
+        }
 
-        // getting all user whoever create an account and giving them jwt token
-        app.put("/users/:email", async (req, res) => {
-            const email = req.params.email;
-            const user = req.body;
-            const filter = { userEmail: email };
-            const options = { upsert: true };
+    })
 
-            const updateDoc = {
-                $set: user
-            }
+    // posting into cart
+    app.post('/cart', async (req, res) => {
+        const booking = req.body;
+        const result = await bookingCollection.insertOne(booking);
+        res.send(result);
+    })
 
-            const result = await userCollection.updateOne(filter, updateDoc, options)
+    //getting items on the cart of all users
+    app.get('/cart', async (req, res) => {
+        const cartItems = {};
+        const result = await bookingCollection.find(cartItems).toArray();
+        res.send(result)
+    })
 
-            //jwt signing
-            const token = jwt.sign({ userEmail: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 * 60 * 60 * 60 })
-            res.send({ result, token })
-        })
-    }
 
-    run().catch(console.dir)
+    // cart item delete
+    app.delete('/cart/:email', async (req, res) => {
+        const email = req.params.email;
+        const query = { userEmail: email };
+        const result = await bookingCollection.deleteOne(query);
+        res.send(result);
+    })
+
+    // getting all user whoever create an account and giving them jwt token
+    app.put("/users/:email", async (req, res) => {
+        const email = req.params.email;
+        const user = req.body;
+        const filter = { userEmail: email };
+        const options = { upsert: true };
+
+        const updateDoc = {
+            $set: user
+        }
+
+        const result = await userCollection.updateOne(filter, updateDoc, options)
+
+        //jwt signing
+        const token = jwt.sign({ userEmail: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 * 60 * 60 * 60 })
+        res.send({ result, token })
+    })
+
+    // getting all users information
+    app.get('/users', async (req, res) => {
+        const query = {};
+        const result = await userCollection.find(query).toArray();
+        res.send(result)
+    })
+}
+
+run().catch(console.dir)
 
 
 app.get('/', (req, res) => {
