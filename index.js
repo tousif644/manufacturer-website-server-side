@@ -143,6 +143,15 @@ async function run() {
         const result = await userCollection.find(query).toArray();
         res.send(result)
     })
+
+    // deleting user by api
+    app.delete('/users/:email', verifyJwt,async (req, res) => {
+        const email = req.params.email;
+        const query = { userEmail: email };
+        const result = await userCollection.deleteOne(query);
+        res.send(result);
+    })
+
 }
 
 run().catch(console.dir)
