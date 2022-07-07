@@ -41,7 +41,7 @@ async function run() {
     const toolsCollection = client.db("ManufacturerWebsite").collection('tools');
     const bookingCollection = client.db("ManufacturerWebsite").collection('cart');
     const userCollection = client.db("ManufacturerWebsite").collection("users");
-
+    const reviewCollection = client.db("ManufacturerWebsite").collection('reviews');
     // getting all tools api
     app.get('/tools', async (req, res) => {
         const query = {};
@@ -95,6 +95,19 @@ async function run() {
         res.send(result);
     })
 
+    //posting into reviews
+    app.post("/reviews", async (req, res) => {
+        const allReviews = req.body;
+        const result = await reviewCollection.insertOne(allReviews);
+        res.send(result);
+    })
+
+    // getting all reviews
+    app.get("/reviews", async (req, res) => {
+        const query = {};
+        const result = await reviewCollection.find(query).toArray();
+        res.send(result);
+    })
     // getting all user whoever create an account and giving them jwt token
     app.put("/users/:email", async (req, res) => {
         const email = req.params.email;
