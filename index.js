@@ -72,6 +72,15 @@ async function run() {
 
     })
 
+    //getting items on the cart of all users
+    app.get('/cart', verifyJwt, async (req, res) => {
+        const cartItems = {};
+        // console.log(cartItems);
+        const result = await bookingCollection.find(cartItems).toArray();
+        console.log(result);
+        res.send(result)
+    })
+
     // posting into cart
     app.post('/cart', verifyJwt, async (req, res) => {
         const booking = req.body;
@@ -79,20 +88,22 @@ async function run() {
         res.send(result);
     })
 
-    //getting items on the cart of all users
-    app.get('/cart', verifyJwt, async (req, res) => {
-        const cartItems = {};
-        const result = await bookingCollection.find(cartItems).toArray();
-        res.send(result)
-    })
 
 
     // cart item delete
-    app.delete('/cart/:email', async (req, res) => {
+    app.delete('/cart/:email', verifyJwt, async (req, res) => {
         const email = req.params.email;
         const query = { userEmail: email };
         const result = await bookingCollection.deleteOne(query);
         res.send(result);
+    })
+
+    // cart  items getting  by id
+    app.get('/payment/cart/:id', verifyJwt, async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) }
+        const result = await bookingCollection.findOne(query);
+        res.send(result)
     })
 
     //posting into reviews
