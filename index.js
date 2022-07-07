@@ -136,6 +136,14 @@ async function run() {
     })
 
 
+    // checking whether it is admin or not
+    app.get('/admin/:email', async (req, res) => {
+        const email = req.params.email;
+        const account = await userCollection.findOne({ userEmail: email });
+        const isAdmin = account.role === 'admin';
+        res.send({ admin: isAdmin })
+    })
+
 
     // getting all users information
     app.get('/users', verifyJwt, async (req, res) => {
@@ -145,7 +153,7 @@ async function run() {
     })
 
     // deleting user by api
-    app.delete('/users/:email', verifyJwt,async (req, res) => {
+    app.delete('/users/:email', verifyJwt, async (req, res) => {
         const email = req.params.email;
         const query = { userEmail: email };
         const result = await userCollection.deleteOne(query);
