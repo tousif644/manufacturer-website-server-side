@@ -24,8 +24,6 @@ function verifyJwt(req, res, next) {
         return res.status(401).send("Unauthorized Access")
     }
     const splitedToken = authHeader.split(" ")[1];
-    console.log("Token is :", splitedToken);
-
     jwt.verify(splitedToken, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
         if (err) {
             return res.status(403).send({ message: "Forbidden Access" })
@@ -64,7 +62,6 @@ async function run() {
     app.get('/cart/:email', verifyJwt, async (req, res) => {
         const email = req.params.email;
         const decodedEmail = req.decoded.userEmail;
-        console.log(decodedEmail);
         if (email === decodedEmail) {
             const query = { userEmail: email };
             const result = await bookingCollection.find(query).toArray();
@@ -121,7 +118,6 @@ async function run() {
         const email = req.params.email;
         const initiator = req.decoded.userEmail;
         const initiatorAccount = await userCollection.findOne({ userEmail: initiator });
-        console.log(initiatorAccount);
         if (initiatorAccount.role === 'admin') {
             const filter = { userEmail: email };
             const updateDoc = {
