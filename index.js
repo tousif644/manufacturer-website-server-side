@@ -70,7 +70,12 @@ async function run() {
         res.send(result);
     })
 
-
+    //posting into tools collection
+    app.post('/tools', verifyJwt, async (req, res) => {
+        const tools = req.body;
+        const result = await toolsCollection.insertOne(tools);
+        res.send(result)
+    })
     // getting a tools by using this api
     app.get('/tools/:id', async (req, res) => {
         const id = req.params.id;
@@ -79,6 +84,13 @@ async function run() {
         res.send(result);
     })
 
+    // deleting a tools
+    app.delete('/tools/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await toolsCollection.findOne(query);
+        res.send(result);
+    })
     // getting cart item for specific email
     app.get('/cart/:email', verifyJwt, async (req, res) => {
         const email = req.params.email;
@@ -96,9 +108,7 @@ async function run() {
     //getting items on the cart of all users
     app.get('/cart', verifyJwt, async (req, res) => {
         const cartItems = {};
-        // console.log(cartItems);
         const result = await bookingCollection.find(cartItems).toArray();
-        console.log(result);
         res.send(result)
     })
 
@@ -134,7 +144,7 @@ async function run() {
         const filter = { _id: ObjectId(id) };
         const updateDoc = {
             $set: {
-                paid : true,
+                paid: true,
                 transactionId: order.transactionId,
             },
         };
@@ -206,14 +216,6 @@ async function run() {
         const query = {};
         const result = await userCollection.find(query).toArray();
         res.send(result)
-    })
-
-    // deleting user by api
-    app.delete('/users/:email', verifyJwt, async (req, res) => {
-        const email = req.params.email;
-        const query = { userEmail: email };
-        const result = await userCollection.deleteOne(query);
-        res.send(result);
     })
 
 }
