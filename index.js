@@ -9,7 +9,7 @@ app.use(express.json())
 
 
 // stripe
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const stripe = require('stripe')(process.env.STRIPE_SECRET)
 
 // port
 const port = process.env.PORT || 5000;
@@ -48,19 +48,18 @@ async function run() {
     const reviewCollection = client.db("ManufacturerWebsite").collection('reviews');
 
     // stripeee api's
-    app.post('/create-payment-intent',verifyJwt, async (req, res) => {
+    app.post('/create-payment-intent', verifyJwt, async (req, res) => {
         // getting price from body
         const priceFromBody = req.body;
         // it will be coin so let's make it bigger
-        const price = priceFromBody * 100;
+        const priceFromBody2 = priceFromBody.totalPrice * 100;
 
         //creating payment intents
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: price,
+            amount: priceFromBody2,
             currency: 'usd',
-            payment_methods_types: ['card']
+            payment_method_types: ['card']
         })
-
         res.send({ clientSecret: paymentIntent.client_secret })
     })
 
@@ -126,6 +125,21 @@ async function run() {
         const query = { _id: ObjectId(id) }
         const result = await bookingCollection.findOne(query);
         res.send(result)
+    })
+
+    //patching payment/cart/:id route
+    app.patch('/payment/cart/:id', verifyJwt, async (req, res) => {
+        const id = req.params.id;
+        const order = req.body;
+        const filter = { _id: ObjectId(id) };
+        const updateDoc = {
+            $set: {
+                paid : true,
+                transactionId: order.transactionId,
+            },
+        };
+        const updatedOrder = await bookingCollection.updateOne(filter, updateDoc);
+        res.send(updatedOrder);
     })
 
     //posting into reviews
